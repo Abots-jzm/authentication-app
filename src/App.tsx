@@ -5,7 +5,8 @@ import SignInUp from "./pages/SignInUp";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "./utils/firebase";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
-import { authActions } from "./store/auth-slice";
+import { authActions, UserType } from "./store/auth-slice";
+import Profile from "./pages/Profile";
 
 export enum Paths {
 	SIGN_UP = "/signup",
@@ -22,13 +23,15 @@ function App() {
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			if (user) navigate(Paths.PROFILE, { replace: true });
-			const currentUser = {
-				email: user?.email,
-				photoURL: user?.photoURL,
-				phoneNumber: user?.phoneNumber,
-				displayName: user?.displayName,
-				uid: user?.uid,
-			};
+			const currentUser: UserType | null = user
+				? {
+						email: user?.email,
+						photoURL: user?.photoURL,
+						phoneNumber: user?.phoneNumber,
+						displayName: user?.displayName,
+						uid: user?.uid,
+				  }
+				: null;
 			dispatch(authActions.setCurrentUser(currentUser));
 			setIsLoading(false);
 		});
@@ -44,7 +47,7 @@ function App() {
 				<Route path="/" element={<Navigate to={Paths.SIGN_UP} />} />
 				<Route path={Paths.SIGN_UP} element={<SignInUp />} />
 				<Route path={Paths.SIGN_IN} element={<SignInUp />} />
-				{user && <Route path={Paths.PROFILE} element="profile" />}
+				{user && <Route path={Paths.PROFILE} element={<Profile />} />}
 				<Route path="/*" element={<Navigate to={Paths.SIGN_IN} />} />
 			</Routes>
 		</Container>

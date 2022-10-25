@@ -5,6 +5,8 @@ import { Paths } from "../App";
 import LogoSVG from "../assets/devchallenges.svg";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../utils/firebase";
+import { useAppDispatch } from "../store/hooks";
+import { authActions } from "../store/auth-slice";
 
 export default function SignInUp() {
 	const location = useLocation();
@@ -13,17 +15,17 @@ export default function SignInUp() {
 	const [enteredPassword, setEnteredPassword] = useState("");
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
+	const dispatch = useAppDispatch();
 
 	useEffect(() => {
 		setpath(location.pathname);
 		setError("");
+		setEnteredEmail("");
+		setEnteredPassword("");
 	}, [location.pathname]);
 
 	async function signInUp(e: React.FormEvent) {
 		e.preventDefault();
-
-		setEnteredEmail("");
-		setEnteredPassword("");
 
 		if (enteredPassword.length < 6 && path === Paths.SIGN_UP) return setError("Password must be longer than 6 characters");
 
@@ -32,12 +34,18 @@ export default function SignInUp() {
 			setIsLoading(true);
 
 			if (path === Paths.SIGN_UP) await createUserWithEmailAndPassword(auth, enteredEmail, enteredPassword);
-			else signInWithEmailAndPassword(auth, enteredEmail, enteredPassword);
-		} catch (error) {
-			setError(path === Paths.SIGN_UP ? "Failed to create account" : "Failed to sign in. Check sign in details and internet connection");
-		}
+			else await signInWithEmailAndPassword(auth, enteredEmail, enteredPassword);
+			console.log("yo");
+		} catch (error: any) {
+			console.log("yo");
 
-		setIsLoading(false);
+			setError(error.message);
+		} finally {
+			setEnteredEmail("");
+			dispatch(authActions.setPassword(enteredPassword));
+			setEnteredPassword("");
+			setIsLoading(false);
+		}
 	}
 
 	return (
@@ -62,6 +70,7 @@ export default function SignInUp() {
 							placeholder="Email"
 							value={enteredEmail}
 							onChange={(e) => setEnteredEmail(e.target.value)}
+							required
 						/>
 					</div>
 					<div className="field">
@@ -76,6 +85,7 @@ export default function SignInUp() {
 							placeholder="Password"
 							value={enteredPassword}
 							onChange={(e) => setEnteredPassword(e.target.value)}
+							required
 						/>
 					</div>
 					{error && <ErrorMessage>{error}</ErrorMessage>}

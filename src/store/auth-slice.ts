@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface UserType {
-	email?: string | null;
+export interface UserType {
 	photoURL?: string | null;
-	phoneNumber?: string | null;
 	displayName?: string | null;
+	bio?: string | null;
+	phoneNumber?: string | null;
+	email?: string | null;
+	password?: string | null;
 	uid?: string | null;
 }
 
@@ -22,6 +24,9 @@ const authSlice = createSlice({
 	reducers: {
 		setCurrentUser(state, action: PayloadAction<UserType | null>) {
 			state.user = action.payload;
+		},
+		setPassword(state, action: PayloadAction<string>) {
+			if (state.user) state.user.password = action.payload;
 		},
 	},
 });
